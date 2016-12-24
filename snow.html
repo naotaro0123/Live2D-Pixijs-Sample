@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charaset="UTF-8">
+<!--<script src="node_modules/pixi.js/bin/pixi.js"></script>
+<script src="node_modules/pixi-live2d/dist/index.js"></script>-->
+<script src="lib/bundle.js"></script>
+</head>
+<body>
+<script>
+var WIDTH = 800;
+var HEIGHT= 600;
+// レンダラー
+const renderer = new PIXI.WebGLRenderer(WIDTH, HEIGHT);
+document.body.appendChild(renderer.view);
+// コンテナー(Three.jsのScene)
+const stage = new PIXI.Container();
+// 背景画像
+const bg01 = new PIXI.Sprite.fromImage('bg01.jpg');
+stage.addChild(bg01);
+
+// Live2Dモデル定義
+const modelpath = 'assets/haru/';
+const modelHaru = {
+    "type":"Live2D Model Setting",
+    "name":"haru",
+    "model":modelpath + "haru_01.moc",
+    "textures":
+    [
+            modelpath + "haru_01.1024/texture_00.png",
+            modelpath + "haru_01.1024/texture_01.png",
+            modelpath + "haru_01.1024/texture_02.png"
+    ],
+    "physics":modelpath + "haru.physics.json",
+    "pose":modelpath + "haru.pose.json",
+    "expressions":
+    [
+     {"name":"f01","file":modelpath + "expressions/f01.exp.json"},
+     {"name":"f02","file":modelpath + "expressions/f02.exp.json"},
+     {"name":"f03","file":modelpath + "expressions/f03.exp.json"},
+     {"name":"f04","file":modelpath + "expressions/f04.exp.json"}
+    ],
+    "layout":
+    {
+            "center_x":0.1,
+            "y":0.9,
+            "width":1.8
+    },
+    "hit_areas":
+    [
+            {"name":"head", "id":"D_REF.HEAD"},
+            {"name":"body", "id":"D_REF.BODY"}
+    ],
+    "motions":
+    {
+            "idle":
+            [
+                    {"file":modelpath + "motions/idle_00.mtn" ,"fade_in":2000, "fade_out":2000},
+                    {"file":modelpath + "motions/idle_01.mtn" ,"fade_in":2000, "fade_out":2000},
+                    {"file":modelpath + "motions/idle_02.mtn" ,"fade_in":2000, "fade_out":2000}
+            ],
+            "tap_body":
+            [
+                    { "file":modelpath + "motions/tapBody_00.mtn" },
+                    { "file":modelpath + "motions/tapBody_01.mtn" },
+                    { "file":modelpath + "motions/tapBody_02.mtn" },
+                    { "file":modelpath + "motions/tapBody_03.mtn" },
+                    { "file":modelpath + "motions/tapBody_04.mtn" }
+            ]
+    }
+};
+const live2dSprite = new PIXI.Live2DSprite(modelHaru);
+stage.addChild(live2dSprite);
+// Live2Dのモーション再生
+live2dSprite.startRandomMotion('idle');
+live2dSprite.on('mousemove', (evt) => {
+  const point = evt.data.global;
+  live2dSprite.setViewPoint(point.x, point.y);
+});
+
+// 雪用のコンテナー(Three.jsのScene)
+const snow_container = new PIXI.Container();
+// ブラーをかける
+const bFilter = new PIXI.filters.BlurFilter();
+bFilter.blur = 2;
+snow_container.filters = [bFilter];
+// stageコンテナーを親とする
+snow_container.setParent(stage);
+
+// 雪を降らせる
+const SNOW_LIMIT = 400;
+let snows = [];
+
+for(let i = 0; i < SNOW_LIMIT; i++){
+    let scale = (Math.floor(Math.random() * 6) + 5) / 10;
+    snows.push(new PIXI.Graphics().beginFill(0xFFFFFF, 0.7).drawCircle(0,0,7).endFill());
+    snows[i].position.x = Math.random() * WIDTH;
+    snows[i].position.y = Math.random() * HEIGHT;
+    snows[i].scale.x = scale;
+    snows[i].scale.y = scale;
+    snow_container.addChild(snows[i]);
+}
+
+
+function animate() {
+    requestAnimationFrame(animate);
+
+    // 雪のアニメーション
+    for (let i = 0; i < SNOW_LIMIT; i++) {
+        let scale = snows[i].scale.x;
+        snows[i].position.x += (Math.random() - 0.5) * 1 * scale;
+        snows[i].position.y += (scale * scale) + 0.1;
+        if(snows[i].position.y > HEIGHT){
+            snows[i].position.y = -10;
+        }
+    }
+    renderer.render(stage);
+}
+animate();
+</script>
+</body>
+</html>
