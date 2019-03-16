@@ -1,4 +1,4 @@
-# Live2D_pixijs_Test
+# Live2D-Pixijs-Sample
 
 Live2D WebGL SDKとpixi.jsを連携するサンプルです。
 
